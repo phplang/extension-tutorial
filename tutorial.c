@@ -6,12 +6,28 @@
 
 #include "php.h"
 
+#include <curl/curl.h>
+
+static PHP_MINIT_FUNCTION(tutorial) {
+    if (CURLE_OK != curl_global_init(CURL_GLOBAL_DEFAULT)) {
+        return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+static PHP_MSHUTDOWN_FUNCTION(tutorial) {
+    curl_global_cleanup();
+
+    return SUCCESS;
+}
+
 zend_module_entry tutorial_module_entry = {
     STANDARD_MODULE_HEADER,
     "tutorial",
     NULL, /* functions */
-    NULL, /* MINIT */
-    NULL, /* MSHUTDOWN */
+    PHP_MINIT(tutorial),
+    PHP_MSHUTDOWN(tutorial),
     NULL, /* RINIT */
     NULL, /* RSHUTDOWN */
     NULL, /* MINFO */
