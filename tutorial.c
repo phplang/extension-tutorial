@@ -12,8 +12,13 @@ static PHP_FUNCTION(tutorial_curl_version) {
     php_printf("%s\n", curl_version());
 }
 
+static PHP_FUNCTION(tutorial_curl_ver) {
+    RETURN_STRING(curl_version());
+}
+
 static zend_function_entry tutorial_functions[] = {
     PHP_FE(tutorial_curl_version, NULL)
+    PHP_FE(tutorial_curl_ver, NULL)
     PHP_FE_END
 };
 
