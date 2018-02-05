@@ -16,9 +16,26 @@ static PHP_FUNCTION(tutorial_curl_ver) {
     RETURN_STRING(curl_version());
 }
 
+static PHP_FUNCTION(tutorial_curl_escape) {
+    char *str, *escaped;
+    size_t len;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &str, &len) == FAILURE) {
+        return;
+    }
+
+    escaped = curl_escape(str, len);
+    if (escaped) {
+        RETVAL_STRING(escaped);
+        curl_free(escaped);
+        return;
+    }
+}
+
 static zend_function_entry tutorial_functions[] = {
     PHP_FE(tutorial_curl_version, NULL)
     PHP_FE(tutorial_curl_ver, NULL)
+    PHP_FE(tutorial_curl_escape, NULL)
     PHP_FE_END
 };
 
