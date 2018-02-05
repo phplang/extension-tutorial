@@ -94,12 +94,35 @@ static PHP_FUNCTION(tutorial_hello_world) {
     }
 }
 
+static PHP_FUNCTION(tutorial_greet_everyone) {
+    zend_array *names;
+    zend_ulong idx;
+    zend_string *name;
+    zval *greeting;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "h", &names) == FAILURE) {
+        return;
+    }
+
+    /* foreach ($names as $name => $greeting) { */
+    ZEND_HASH_FOREACH_KEY_VAL(names, idx, name, greeting)
+        zend_string *strgreet = zval_get_string(greeting);
+        if (name) {
+            php_printf("%s %s\n", ZSTR_VAL(strgreet), ZSTR_VAL(name));
+        } else {
+            php_printf("%s #%ld\n", ZSTR_VAL(strgreet), (long)idx);
+        }
+        zend_string_release(strgreet);
+    ZEND_HASH_FOREACH_END();
+}
+
 static zend_function_entry tutorial_functions[] = {
     PHP_FE(tutorial_curl_version, NULL)
     PHP_FE(tutorial_curl_ver, NULL)
     PHP_FE(tutorial_curl_escape, NULL)
     PHP_FE(tutorial_curl_info, NULL)
     PHP_FE(tutorial_hello_world, NULL)
+    PHP_FE(tutorial_greet_everyone, NULL)
     PHP_FE_END
 };
 
