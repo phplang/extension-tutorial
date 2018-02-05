@@ -32,10 +32,46 @@ static PHP_FUNCTION(tutorial_curl_escape) {
     }
 }
 
+static PHP_FUNCTION(tutorial_curl_info) {
+    curl_version_info_data *info = curl_version_info(CURLVERSION_NOW);
+
+    if (!info) {
+        return;
+    }
+
+    array_init(return_value);
+    add_assoc_long(return_value, "age", info->age);
+    add_assoc_string(return_value, "version", info->version);
+    add_assoc_long(return_value, "version_num", info->version_num);
+    add_assoc_string(return_value, "host", info->host);
+    add_assoc_long(return_value, "features", info->features);
+    if (info->ssl_version) {
+        zval ssl;
+        array_init(&ssl);
+        add_assoc_string(&ssl, "version", info->ssl_version);
+        add_assoc_long(&ssl, "version_num", info->ssl_version_num);
+        add_assoc_zval(return_value, "ssl", &ssl);
+    }
+    if (info->libz_version) {
+        add_assoc_string(return_value, "libz", info->libz_version);
+    }
+    if (info->protocols) {
+        const char* const* p = info->protocols;
+        zval protos;
+        array_init(&protos);
+        while (*p) {
+            add_next_index_string(&protos, *p);
+            ++p;
+        }
+        add_assoc_zval(return_value, "protocols", &protos);
+    }
+}
+
 static zend_function_entry tutorial_functions[] = {
     PHP_FE(tutorial_curl_version, NULL)
     PHP_FE(tutorial_curl_ver, NULL)
     PHP_FE(tutorial_curl_escape, NULL)
+    PHP_FE(tutorial_curl_info, NULL)
     PHP_FE_END
 };
 
