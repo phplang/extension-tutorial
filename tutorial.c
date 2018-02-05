@@ -67,11 +67,39 @@ static PHP_FUNCTION(tutorial_curl_info) {
     }
 }
 
+static PHP_FUNCTION(tutorial_hello_world) {
+    zend_array *arr;
+    zval *tmp;
+    const char *name = "Stranger";
+    zend_bool greet = 1;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "h", &arr) == FAILURE) {
+        return;
+    }
+
+    tmp = zend_symtable_str_find(arr, "name", strlen("name"));
+    if (tmp && (Z_TYPE_P(tmp) == IS_STRING)) {
+        name = Z_STRVAL_P(tmp);
+    }
+
+    tmp = zend_symtable_str_find(arr, "greet", strlen("greet"));
+    if (tmp && (Z_TYPE_P(tmp) == IS_FALSE)) {
+        greet = 0;
+    }
+
+    if (greet) {
+        php_printf("Hello %s\n", name);
+    } else {
+        php_printf("Goodbye %s\n", name);
+    }
+}
+
 static zend_function_entry tutorial_functions[] = {
     PHP_FE(tutorial_curl_version, NULL)
     PHP_FE(tutorial_curl_ver, NULL)
     PHP_FE(tutorial_curl_escape, NULL)
     PHP_FE(tutorial_curl_info, NULL)
+    PHP_FE(tutorial_hello_world, NULL)
     PHP_FE_END
 };
 
