@@ -8,6 +8,15 @@
 
 #include <curl/curl.h>
 
+static PHP_FUNCTION(tutorial_curl_version) {
+    php_printf("%s\n", curl_version());
+}
+
+static zend_function_entry tutorial_functions[] = {
+    PHP_FE(tutorial_curl_version, NULL)
+    PHP_FE_END
+};
+
 static PHP_MINIT_FUNCTION(tutorial) {
     if (CURLE_OK != curl_global_init(CURL_GLOBAL_DEFAULT)) {
         return FAILURE;
@@ -25,7 +34,7 @@ static PHP_MSHUTDOWN_FUNCTION(tutorial) {
 zend_module_entry tutorial_module_entry = {
     STANDARD_MODULE_HEADER,
     "tutorial",
-    NULL, /* functions */
+    tutorial_functions,
     PHP_MINIT(tutorial),
     PHP_MSHUTDOWN(tutorial),
     NULL, /* RINIT */
