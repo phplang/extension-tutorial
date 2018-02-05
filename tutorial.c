@@ -5,6 +5,7 @@
 #endif
 
 #include "php.h"
+#include "zend_exceptions.h"
 
 #include <curl/curl.h>
 
@@ -23,7 +24,24 @@ static curl_easy_object* curl_easy_from_zend_object(zend_object *objval) {
     return ((curl_easy_object*)(objval + 1)) - 1;
 }
 
+static PHP_METHOD(CurlEasy, __construct) {
+    curl_easy_object *objval = curl_easy_from_zend_object(Z_OBJ_P(getThis()));
+    zend_string *url = NULL;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|P", &url) == FAILURE) {
+        return;
+    }
+
+    if (url) {
+        CURLcode ret = curl_easy_setopt(objval->handle, CURLOPT_URL, ZSTR_VAL(url));
+        if (ret != CURLE_OK) {
+            zend_throw_exception(zend_ce_exception, "Failed setting URL", (zend_long)ret);
+        }
+    }
+}
+
 static zend_function_entry curl_easy_methods[] = {
+    PHP_ME(CurlEasy, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
