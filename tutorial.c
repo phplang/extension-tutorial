@@ -40,8 +40,18 @@ static PHP_METHOD(CurlEasy, __construct) {
     }
 }
 
+static PHP_METHOD(CurlEasy, perform) {
+    if (zend_parse_parameters_none_throw() == FAILURE) {
+        return;
+    }
+
+    curl_easy_object *objval = curl_easy_from_zend_object(Z_OBJ_P(getThis()));
+    curl_easy_perform(objval->handle);
+}
+
 static zend_function_entry curl_easy_methods[] = {
     PHP_ME(CurlEasy, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
+    PHP_ME(CurlEasy, perform, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
