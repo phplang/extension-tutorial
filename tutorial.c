@@ -40,6 +40,38 @@ static PHP_METHOD(CurlEasy, __construct) {
     }
 }
 
+static PHP_METHOD(CurlEasy, setOpt) {
+    curl_easy_object *objval = curl_easy_from_zend_object(Z_OBJ_P(getThis()));
+    zend_long opt;
+    zval *value;
+    CURLcode ret = CURLE_OK;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "lz", &opt, &value) == FAILURE) {
+        return;
+    }
+
+    switch (opt) {
+        case CURLOPT_URL: {
+            zend_string *strval = zval_get_string(value);
+            ret = curl_easy_setopt(objval->handle, opt, ZSTR_VAL(strval));
+            zend_string_release(strval);
+            break;
+        }
+        case CURLOPT_TIMEOUT: {
+            zend_long lval = zval_get_long(value);
+            ret = curl_easy_setopt(objval->handle, opt, lval);
+            break;
+        }
+        default:
+            zend_throw_exception_ex(zend_ce_exception, opt, "Unknown curl_easy_setopt() option: %ld", (long)opt);
+            return;
+    }
+    if (ret != CURLE_OK) {
+        zend_throw_exception_ex(zend_ce_exception, ret, "Failed setting option: %ld", (long)opt);
+    }
+    RETURN_ZVAL(getThis(), 1, 0);
+}
+
 static PHP_METHOD(CurlEasy, perform) {
     if (zend_parse_parameters_none_throw() == FAILURE) {
         return;
@@ -51,6 +83,7 @@ static PHP_METHOD(CurlEasy, perform) {
 
 static zend_function_entry curl_easy_methods[] = {
     PHP_ME(CurlEasy, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
+    PHP_ME(CurlEasy, setOpt, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(CurlEasy, perform, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
@@ -101,6 +134,9 @@ static PHP_MINIT_FUNCTION(tutorial) {
     curl_easy_handlers.offset = XtOffsetOf(curl_easy_object, std);
     curl_easy_handlers.clone_obj = curl_easy_clone;
     curl_easy_handlers.free_obj = curl_easy_free;
+
+    zend_declare_class_constant_long(curl_easy_ce, "OPT_URL", strlen("OPT_URL"), CURLOPT_URL);
+    zend_declare_class_constant_long(curl_easy_ce, "OPT_TIMEOUT", strlen("OPT_TIMEOUT"), CURLOPT_TIMEOUT);
 
     return SUCCESS;
 }
