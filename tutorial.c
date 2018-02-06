@@ -81,10 +81,28 @@ static PHP_METHOD(CurlEasy, perform) {
     curl_easy_perform(objval->handle);
 }
 
+static PHP_METHOD(CurlEasy, escape) {
+    zend_string *str;
+
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "S", &str) == FAILURE) {
+        return;
+    }
+
+    char *escaped = curl_escape(ZSTR_VAL(str), ZSTR_LEN(str));
+    if (!escaped) {
+        zend_throw_exception_ex(zend_ce_exception, 0, "Failed escaping %s", ZSTR_VAL(str));
+        return;
+    }
+    RETVAL_STRING(escaped);
+    curl_free(escaped);
+}
+
 static zend_function_entry curl_easy_methods[] = {
     PHP_ME(CurlEasy, __construct, NULL, ZEND_ACC_CTOR | ZEND_ACC_PUBLIC)
     PHP_ME(CurlEasy, setOpt, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(CurlEasy, perform, NULL, ZEND_ACC_PUBLIC)
+
+    PHP_ME(CurlEasy, escape, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_FE_END
 };
 
