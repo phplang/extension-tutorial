@@ -1,16 +1,13 @@
 /* tutorial.c */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include "php.h"
+#include "tutorial.h"
 #include "zend_exceptions.h"
 
 #include <curl/curl.h>
 
 static zend_class_entry *curl_easy_ce = NULL;
 static zend_object_handlers curl_easy_handlers;
+ZEND_DECLARE_MODULE_GLOBALS(tutorial);
 
 typedef struct _curl_easy_object {
     CURL *handle;
@@ -165,6 +162,13 @@ static PHP_MSHUTDOWN_FUNCTION(tutorial) {
     return SUCCESS;
 }
 
+static PHP_GINIT_FUNCTION(tutorial) {
+#if defined(COMPILE_DL_ASTKIT) && defined(ZTS)
+    ZEND_TSRMLS_CACHE_UPDATE();
+#endif
+    tutorial_globals->default_url = NULL;
+}
+
 zend_module_entry tutorial_module_entry = {
     STANDARD_MODULE_HEADER,
     "tutorial",
@@ -175,7 +179,11 @@ zend_module_entry tutorial_module_entry = {
     NULL, /* RSHUTDOWN */
     NULL, /* MINFO */
     NO_VERSION_YET,
-    STANDARD_MODULE_PROPERTIES
+    PHP_MODULE_GLOBALS(tutorial),
+    PHP_GINIT(tutorial),
+    NULL, /* GSHUTDOWN */
+    NULL, /* RPOSTSHUTDOWN */
+    STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_TUTORIAL
