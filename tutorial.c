@@ -23,14 +23,15 @@ static curl_easy_object* curl_easy_from_zend_object(zend_object *objval) {
 
 static PHP_METHOD(CurlEasy, __construct) {
     curl_easy_object *objval = curl_easy_from_zend_object(Z_OBJ_P(getThis()));
-    zend_string *url = NULL;
+    char *url = TUTORIALG(default_url);
+    size_t url_len = 0;
 
-    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|P", &url) == FAILURE) {
+    if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "|p", &url, &url_len) == FAILURE) {
         return;
     }
 
-    if (url) {
-        CURLcode ret = curl_easy_setopt(objval->handle, CURLOPT_URL, ZSTR_VAL(url));
+    if (url && url[0]) {
+        CURLcode ret = curl_easy_setopt(objval->handle, CURLOPT_URL, url);
         if (ret != CURLE_OK) {
             zend_throw_exception(zend_ce_exception, "Failed setting URL", (zend_long)ret);
         }
@@ -134,6 +135,11 @@ static void curl_easy_free(zend_object *zobj) {
     zend_object_std_dtor(zobj);
 }
 
+PHP_INI_BEGIN()
+    STD_PHP_INI_ENTRY("tutorial.default_url", "", PHP_INI_ALL,
+                      OnUpdateString, default_url, zend_tutorial_globals, tutorial_globals)
+PHP_INI_END()
+
 static PHP_MINIT_FUNCTION(tutorial) {
     zend_class_entry ce;
 
@@ -153,10 +159,13 @@ static PHP_MINIT_FUNCTION(tutorial) {
     zend_declare_class_constant_long(curl_easy_ce, "OPT_URL", strlen("OPT_URL"), CURLOPT_URL);
     zend_declare_class_constant_long(curl_easy_ce, "OPT_TIMEOUT", strlen("OPT_TIMEOUT"), CURLOPT_TIMEOUT);
 
+    REGISTER_INI_ENTRIES();
+
     return SUCCESS;
 }
 
 static PHP_MSHUTDOWN_FUNCTION(tutorial) {
+    UNREGISTER_INI_ENTRIES();
     curl_global_cleanup();
 
     return SUCCESS;
